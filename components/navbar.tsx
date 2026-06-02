@@ -6,7 +6,7 @@ const Navbar = () => {
         <div className="flex itmes-center p-4">
             <MobileSidebar />
             <div className="flex w-full justify-end">
-                <UserButton afterSignOutUrl="/" />
+                <UserButton />
             </div>
         </div>
     );
