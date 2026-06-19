@@ -5,6 +5,9 @@ export const users = pgTable("users", {
   id: text("id").primaryKey(), // Clerk user ID
   name: text("name"),
   email: text("email").notNull(),
+  resumeText: text("resume_text"),           // Extracted plain text from PDF
+  resumeFileName: text("resume_file_name"),  // Original uploaded file name
+  resumeUploadedAt: timestamp("resume_uploaded_at"), // Upload timestamp
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

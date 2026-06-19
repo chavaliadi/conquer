@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { users, sessions, messages } from "@/lib/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
+
 import Groq from "groq-sdk";
 import { getInterviewerPrompt } from "@/lib/prompts/interviewer";
 
@@ -38,6 +39,10 @@ export async function POST(req: Request) {
       set: { email, name, updatedAt: new Date() }
     });
 
+    // Fetch user's resume (if any)
+    const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
+    const resumeText = userRecord?.resumeText || undefined;
+
     // Create session
     const [newSession] = await db.insert(sessions).values({
       userId,
@@ -46,8 +51,8 @@ export async function POST(req: Request) {
       status: "ACTIVE",
     }).returning();
 
-    // Generate first greeting / question
-    const systemPrompt = getInterviewerPrompt({ topic, difficulty });
+    // Generate first greeting / question (resume-aware if uploaded)
+    const systemPrompt = getInterviewerPrompt({ topic, difficulty, resumeText });
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
@@ -77,11 +82,27 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const { userId } = await auth();
     if (!userId) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get("sessionId");
+
+    if (sessionId) {
+      const [session] = await db
+        .select()
+        .from(sessions)
+        .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)));
+
+      if (!session) {
+        return new NextResponse("Session not found", { status: 404 });
+      }
+
+      return NextResponse.json(session);
     }
 
     const userSessions = await db

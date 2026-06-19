@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, Settings } from "lucide-react";
+import { LayoutDashboard, Settings, History, LineChart } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 const montserrat = Montserrat({
@@ -20,9 +20,22 @@ const routes = [
       color: "text-sky-500", 
     },
     {
+      label: "History",
+      icon: History,
+      href: "/history",
+      color: "text-violet-500",
+    },
+    {
+      label: "Progress",
+      icon: LineChart,
+      href: "/progress",
+      color: "text-pink-500",
+    },
+    {
         label: "Settings",
         icon: Settings,
         href: "/settings",
+        color: "text-orange-500",
       },
 ]
 

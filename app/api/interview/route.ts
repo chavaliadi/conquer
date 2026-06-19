@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { sessions, messages } from "@/lib/db/schema";
+import { sessions, messages, users } from "@/lib/db/schema";
 import { eq, asc } from "drizzle-orm";
 import Groq from "groq-sdk";
 import { getInterviewerPrompt } from "@/lib/prompts/interviewer";
@@ -48,6 +48,10 @@ export async function POST(req: Request) {
 
     const userTurnNumber = history.length + 1;
 
+    // Fetch user's resume for resume-aware prompting
+    const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
+    const resumeText = userRecord?.resumeText || undefined;
+
     // Save user's message to DB
     await db.insert(messages).values({
       sessionId,
@@ -65,6 +69,7 @@ export async function POST(req: Request) {
     const systemPrompt = getInterviewerPrompt({
       topic: session.topic,
       difficulty: session.difficulty,
+      resumeText,
     });
 
     const systemMessage = { role: "system", content: systemPrompt };

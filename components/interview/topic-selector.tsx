@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { Code2, Server, Users, Laptop, BrainCircuit, Loader2 } from "lucide-react";
+import { Code2, Server, Users, Laptop, BrainCircuit, Loader2, FileText, ShieldCheck } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useInterviewStore } from "@/lib/store/interview-store";
 
@@ -55,6 +55,23 @@ export default function TopicSelector() {
   const [selectedTopic, setSelectedTopic] = useState("");
   const [selectedDifficulty, setSelectedDifficulty] = useState("Medium");
   const [loading, setLoading] = useState(false);
+  const [hasResume, setHasResume] = useState(false);
+
+  // Check if user has a resume uploaded
+  useEffect(() => {
+    const checkResume = async () => {
+      try {
+        const res = await fetch("/api/resume/upload");
+        if (res.ok) {
+          const data = await res.json();
+          setHasResume(data.hasResume);
+        }
+      } catch {
+        // Silent fail — not critical
+      }
+    };
+    checkResume();
+  }, []);
 
   const handleStart = async () => {
     if (!selectedTopic) return;
@@ -87,6 +104,26 @@ export default function TopicSelector() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8 p-4">
+
+      {/* Resume-Aware Mode Status Badge */}
+      {hasResume ? (
+        <div className="flex items-center gap-x-3 px-4 py-3 rounded-xl bg-emerald-500/5 border border-emerald-500/15">
+          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+          <p className="text-xs text-emerald-400/90 font-light leading-relaxed">
+            <span className="font-bold text-emerald-300">Resume-Aware Mode Active</span> — the AI will reference your uploaded resume to ask personalized technical questions.
+          </p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-x-3 px-4 py-3 rounded-xl bg-neutral-900/50 border border-dashed border-neutral-800">
+          <FileText className="w-4 h-4 text-neutral-500 shrink-0" />
+          <p className="text-xs text-muted-foreground font-light leading-relaxed">
+            Upload your resume in{" "}
+            <a href="/settings" className="text-indigo-400 font-semibold hover:text-indigo-300 transition">Settings</a>{" "}
+            to enable Resume-Aware interviews tailored to your background.
+          </p>
+        </div>
+      )}
+
       {/* Step 1: Choose Topic */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold flex items-center gap-x-2 text-foreground/80">

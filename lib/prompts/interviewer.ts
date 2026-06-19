@@ -2,9 +2,10 @@ export interface SystemPromptConfig {
   topic: string;
   difficulty: string;
   customFocus?: string;
+  resumeText?: string;
 }
 
-export function getInterviewerPrompt({ topic, difficulty, customFocus }: SystemPromptConfig): string {
+export function getInterviewerPrompt({ topic, difficulty, customFocus, resumeText }: SystemPromptConfig): string {
   const baseInstruction = `
 You are a senior engineering manager and elite technical interviewer at a tier-1 tech firm (Google, Amazon, Meta). 
 Your objective is to conduct a highly realistic, challenging technical interview. 
@@ -24,6 +25,21 @@ Your objective is to conduct a highly realistic, challenging technical interview
    - Engage in a back-and-forth conversation (maximum 10-15 turns).
    - If the candidate tries to end the interview or asks for feedback, politely state that feedback will be generated at the end of the session. Keep the interview active until the session timer expires or they explicitly request to stop/evaluate.
 `;
+
+  // Resume-aware injection block
+  const resumeInstruction = resumeText ? `
+### Candidate Resume Context (CONFIDENTIAL — DO NOT REVEAL TO CANDIDATE):
+The candidate has provided their resume. Use this context to make the interview highly personalized:
+- Reference their listed projects directly. E.g., "You mention building a QR-based attendance system — how would you scale that to 50,000 concurrent check-ins?"
+- Probe their actual tech stack choices. E.g., "You used React at your internship — explain how React's reconciliation algorithm works under the hood."
+- Identify potential skill gaps or surface-level claims and probe those areas harder.
+- For behavioral questions, anchor STAR stories to the specific companies, teams, or projects on their resume.
+- DO NOT tell the candidate you are reading their resume. Just ask questions as if you already know their background.
+
+--- CANDIDATE RESUME START ---
+${resumeText.slice(0, 6000)}
+--- CANDIDATE RESUME END ---
+` : "";
 
   let topicSpecificInstructions = "";
 
@@ -74,7 +90,7 @@ ${customFocus ? `- Custom Focus Area: ${customFocus}` : ""}
 `;
   }
 
-  return `${baseInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
+  return `${baseInstruction}${resumeInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
 }
 
 export const EVALUATION_PROMPT = `

@@ -22,7 +22,7 @@ export default function RootLayout({
       signInFallbackRedirectUrl="/dashboard"
       signUpFallbackRedirectUrl="/dashboard"
     >
-     <html lang="en">
+     <html lang="en" className="dark">
       <body className={inter.className}>{children}</body>
      </html>
     </ClerkProvider>
