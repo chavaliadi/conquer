@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useChat } from "@ai-sdk/react";
 import { TextStreamChatTransport } from "ai";
@@ -25,6 +25,8 @@ export default function InterviewPage() {
     activeSessionId,
     topic,
     difficulty,
+    mode,
+    subTopic,
     durationSeconds,
     timerActive,
     setTimerActive,
@@ -51,12 +53,54 @@ export default function InterviewPage() {
     });
   }, [activeSessionId]);
 
+  // Helper to trigger per-answer scoring in background
+  const triggerAnswerScoring = async (turnNumber: number) => {
+    try {
+      const res = await fetch("/api/interview/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: activeSessionId, turnNumber }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages((prev) =>
+          prev.map((msg, idx) => {
+            if (idx === turnNumber - 1) {
+              return {
+                ...msg,
+                score: data.score,
+                feedback: data.feedback,
+              };
+            }
+            return msg;
+          })
+        );
+      }
+    } catch (e) {
+      console.error("Failed to score answer:", e);
+    }
+  };
+
   // Setup useChat hook
   const { messages, sendMessage, status, setMessages } = useChat({
     transport,
     onFinish: () => {
-      // Small delay to scroll down after text finishes streaming
       scrollToBottom();
+
+      // Check if Quick Fire limit reached
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && getMessageContent(lastMsg).includes("[LIMIT_REACHED]")) {
+        setTimeout(() => {
+          handleEndInterview();
+        }, 800);
+        return;
+      }
+
+      // Trigger background scoring for the user's answer (which is messages.length - 1)
+      const userTurnNumber = messages.length - 1;
+      if (userTurnNumber > 0) {
+        triggerAnswerScoring(userTurnNumber);
+      }
     },
   });
 
@@ -85,7 +129,7 @@ export default function InterviewPage() {
             const sessions = await res.json();
             const active = sessions.find((s: any) => s.status === "ACTIVE");
             if (active) {
-              startSession(active.id, active.topic, active.difficulty);
+              startSession(active.id, active.topic, active.difficulty, active.mode, active.subTopic);
               currentSessionId = active.id;
             } else {
               router.push("/dashboard");
@@ -114,6 +158,8 @@ export default function InterviewPage() {
               role: m.role as "system" | "user" | "assistant",
               content: m.content,
               parts: [{ type: "text" as const, text: m.content }],
+              score: m.answerScore !== null ? m.answerScore : undefined,
+              feedback: m.feedback !== null ? m.feedback : undefined,
             }))
           );
         }
@@ -127,35 +173,13 @@ export default function InterviewPage() {
     initialize();
   }, [activeSessionId, startSession, router, setMessages]);
 
-  // Elapsed Timer Effect
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (timerActive) {
-      interval = setInterval(() => {
-        incrementDuration();
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [timerActive, incrementDuration]);
-
-  // Auto scroll to bottom
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
-
-  const scrollToBottom = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  };
-
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60).toString().padStart(2, "0");
     const s = (secs % 60).toString().padStart(2, "0");
     return `${m}:${s}`;
   };
 
-  const handleEndInterview = async () => {
+  const handleEndInterview = useCallback(async () => {
     if (!activeSessionId) return;
     setTimerActive(false);
     setEvaluating(true);
@@ -185,6 +209,35 @@ export default function InterviewPage() {
       setTimerActive(true);
     } finally {
       setEvaluating(false);
+    }
+  }, [activeSessionId, durationSeconds, endSession, setTimerActive]);
+
+  // Elapsed Timer Effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (timerActive) {
+      interval = setInterval(() => {
+        incrementDuration();
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerActive, incrementDuration]);
+
+  // Quick Fire countdown timeout check
+  useEffect(() => {
+    if (mode === "QUICK_FIRE" && timerActive && durationSeconds === 0) {
+      handleEndInterview();
+    }
+  }, [durationSeconds, mode, timerActive, handleEndInterview]);
+
+  // Auto scroll to bottom
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
+
+  const scrollToBottom = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   };
 
@@ -374,10 +427,27 @@ export default function InterviewPage() {
 
       {/* Interview Dashboard Header */}
       <div className="flex items-center justify-between border-b px-6 py-4 bg-card shadow-sm shrink-0">
-        <div className="space-y-1">
-          <h2 className="text-md font-semibold text-foreground truncate max-w-[200px] md:max-w-md">
-            {topic}
-          </h2>
+        <div className="space-y-1 pr-4">
+          <div className="flex items-center gap-x-2">
+            <h2 className="text-md font-semibold text-foreground truncate max-w-[150px] md:max-w-md">
+              {topic}
+            </h2>
+            {mode && mode !== "STANDARD" && (
+              <span className={`px-2 py-0.5 rounded text-[10px] font-semibold tracking-wider uppercase shrink-0 ${
+                mode === "QUICK_FIRE"
+                  ? "bg-red-500/10 text-red-400 border border-red-500/25"
+                  : mode === "DEEP_DIVE"
+                  ? "bg-violet-500/10 text-violet-400 border border-violet-500/25"
+                  : "bg-rose-500/10 text-rose-400 border border-rose-500/25"
+              }`}>
+                {mode === "QUICK_FIRE"
+                  ? "QUICK FIRE"
+                  : mode === "DEEP_DIVE"
+                  ? `DEEP DIVE: ${subTopic || ""}`
+                  : "WEAKNESS TRAINER"}
+              </span>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground">
             {difficulty} Track
           </p>
@@ -400,7 +470,7 @@ export default function InterviewPage() {
 
       {/* Messages Transcript Scroll Area */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto px-6 py-8 space-y-6 scrollbar-thin">
-        {messages.filter(m => m.role !== "system").map((message) => {
+        {messages.filter(m => m.role !== "system" && getMessageContent(m) !== "[LIMIT_REACHED]").map((message) => {
           const isAI = message.role === "assistant";
           
           return (
@@ -409,7 +479,7 @@ export default function InterviewPage() {
               className={`flex w-full ${isAI ? "justify-start" : "justify-end"}`}
             >
               <div
-                className={`max-w-[85%] md:max-w-[75%] px-5 py-4 rounded-2xl border leading-relaxed text-sm ${
+                className={`max-w-[85%] md:max-w-[75%] px-5 py-4 rounded-2xl border leading-relaxed text-sm relative group ${
                   isAI
                     ? "bg-card border-border text-foreground"
                     : "bg-indigo-600 border-indigo-700 text-white shadow-md shadow-indigo-600/10"
@@ -421,6 +491,29 @@ export default function InterviewPage() {
                     {para}
                   </p>
                 ))}
+
+                {/* Score badge / pill */}
+                {!isAI && (message as any).score !== undefined && (
+                  <div className="mt-3 flex flex-col gap-y-1.5 pt-2.5 border-t border-indigo-500/30 text-xs">
+                    <div className="flex items-center gap-x-2">
+                      <span className="text-indigo-200/90 font-medium">Answer Score:</span>
+                      <span className={`px-2 py-0.5 rounded font-semibold text-[10px] ${
+                        (message as any).score >= 8
+                          ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                          : (message as any).score >= 6
+                          ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                          : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                      }`}>
+                        {(message as any).score}/10
+                      </span>
+                    </div>
+                    {(message as any).feedback && (
+                      <p className="text-indigo-100/80 font-light leading-relaxed italic text-[11px]">
+                        &quot;{(message as any).feedback}&quot;
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );

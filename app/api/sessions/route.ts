@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { users, sessions, messages } from "@/lib/db/schema";
+import { users, sessions, messages, progress } from "@/lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 
 import Groq from "groq-sdk";
@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { topic, difficulty } = body;
+    const { topic, difficulty, mode = "STANDARD", subTopic = null } = body;
 
     if (!topic || !difficulty) {
       return new NextResponse("Missing topic or difficulty", { status: 400 });
@@ -43,18 +43,42 @@ export async function POST(req: Request) {
     const [userRecord] = await db.select().from(users).where(eq(users.id, userId));
     const resumeText = userRecord?.resumeText || undefined;
 
+    // Fetch weak areas if in WEAKNESS_TRAINER mode
+    let weakAreas: string[] = [];
+    if (mode === "WEAKNESS_TRAINER") {
+      const [existingProgress] = await db
+        .select()
+        .from(progress)
+        .where(and(eq(progress.userId, userId), eq(progress.topic, topic)));
+      if (existingProgress && Array.isArray(existingProgress.weakAreas)) {
+        weakAreas = existingProgress.weakAreas as string[];
+      }
+    }
+
     // Create session
     const [newSession] = await db.insert(sessions).values({
       userId,
       topic,
       difficulty,
+      mode,
+      subTopic,
       status: "ACTIVE",
     }).returning();
 
     // Generate first greeting / question (resume-aware if uploaded)
-    const systemPrompt = getInterviewerPrompt({ topic, difficulty, resumeText });
+    const systemPrompt = getInterviewerPrompt({
+      topic,
+      difficulty,
+      resumeText,
+      mode,
+      subTopic,
+      weakAreas,
+    });
+
+    const modelToUse = mode === "QUICK_FIRE" ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
+
     const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: modelToUse,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: "Please introduce yourself, state the topic and difficulty, and ask the first interview question. Keep it concise (2-4 sentences max)." }

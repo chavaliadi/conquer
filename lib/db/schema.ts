@@ -22,6 +22,9 @@ export const sessions = pgTable("sessions", {
   durationSeconds: integer("duration_seconds").default(0).notNull(),
   overallScore: doublePrecision("overall_score"),
   report: jsonb("report"), // Stores { dimensionScores: { depth: 8, specificity: 7... }, strengths: [], gaps: [], suggestions: [], topicsNotCovered: [] }
+  mode: text("mode").default("STANDARD").notNull(), // "STANDARD" | "QUICK_FIRE" | "DEEP_DIVE" | "WEAKNESS_TRAINER"
+  subTopic: text("sub_topic"),
+  isPublic: boolean("is_public").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -16,6 +16,11 @@ import {
   MessageSquare,
   Sparkles,
   Loader2,
+  Share2,
+  Globe,
+  Copy,
+  Check,
+  Printer,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -32,6 +37,10 @@ function HistoryContent() {
   const [reviewSession, setReviewSession] = useState<any>(null);
   const [reviewMessages, setReviewMessages] = useState<any[]>([]);
   const [loadingReview, setLoadingReview] = useState(false);
+
+  // Sharing states
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [togglingPublic, setTogglingPublic] = useState(false);
 
   const activeReviewId = searchParams.get("sessionId");
 
@@ -93,7 +102,40 @@ function HistoryContent() {
   const closeReview = () => {
     setReviewSession(null);
     setReviewMessages([]);
+    setCopiedLink(false);
     router.push("/history");
+  };
+
+  const togglePublicVisibility = async () => {
+    if (!reviewSession) return;
+    setTogglingPublic(true);
+    const newStatus = !reviewSession.isPublic;
+    try {
+      const res = await fetch(`/api/sessions/${reviewSession.id}/public`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isPublic: newStatus }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setReviewSession(updated);
+        setSessions((prev) =>
+          prev.map((s) => (s.id === updated.id ? { ...s, isPublic: updated.isPublic } : s))
+        );
+      }
+    } catch (e) {
+      console.error("Failed to toggle public visibility:", e);
+    } finally {
+      setTogglingPublic(false);
+    }
+  };
+
+  const copyShareLink = () => {
+    if (!reviewSession) return;
+    const url = `${window.location.origin}/session/${reviewSession.id}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
   };
 
   const formatDuration = (secs: number) => {
@@ -322,6 +364,55 @@ function HistoryContent() {
                   </div>
                 </div>
 
+                {/* Share & Print Action Toolbar */}
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-card border border-neutral-900 text-xs">
+                  <div className="flex items-center gap-x-6">
+                    {/* Public Share Toggle */}
+                    <div className="flex items-center gap-x-2">
+                      <Globe className="w-4 h-4 text-indigo-400" />
+                      <span className="font-semibold text-foreground/80">Public Sharing</span>
+                      <button
+                        onClick={togglePublicVisibility}
+                        disabled={togglingPublic}
+                        className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
+                          reviewSession.isPublic ? "bg-indigo-600 justify-end" : "bg-neutral-800 justify-start"
+                        }`}
+                      >
+                        <motion.div
+                          layout
+                          className="w-4 h-4 rounded-full bg-white"
+                        />
+                      </button>
+                    </div>
+
+                    {/* Copy Link Button */}
+                    {reviewSession.isPublic && (
+                      <button
+                        onClick={copyShareLink}
+                        className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 hover:bg-indigo-900/20 transition cursor-pointer"
+                      >
+                        {copiedLink ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" /> Copied Link
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" /> Copy Share Link
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Print Button */}
+                  <button
+                    onClick={() => window.open(`/session/${reviewSession.id}/print`, "_blank")}
+                    className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 hover:text-white transition cursor-pointer text-muted-foreground"
+                  >
+                    <Printer className="w-3.5 h-3.5" /> Export PDF Report
+                  </button>
+                </div>
+
                 {/* Main Tabs (Scorecard vs Transcript) */}
                 <DrawerTabs 
                   scorecard={
@@ -437,7 +528,7 @@ function HistoryContent() {
                                 className={`flex w-full ${isAI ? "justify-start" : "justify-end"}`}
                               >
                                 <div
-                                  className={`max-w-[90%] px-4 py-3 rounded-xl border leading-relaxed text-xs ${
+                                  className={`max-w-[90%] px-4 py-3 rounded-xl border leading-relaxed text-xs relative ${
                                     isAI
                                       ? "bg-neutral-950 border-neutral-900 text-foreground"
                                       : "bg-indigo-600 border-indigo-700 text-white"
@@ -448,6 +539,29 @@ function HistoryContent() {
                                       {para}
                                     </p>
                                   ))}
+
+                                  {/* Answer Score badge for user responses */}
+                                  {!isAI && message.answerScore !== null && message.answerScore !== undefined && (
+                                    <div className="mt-2.5 flex flex-col gap-y-1 pt-2 border-t border-indigo-500/35 text-[10px]">
+                                      <div className="flex items-center gap-x-2">
+                                        <span className="text-indigo-200/90 font-medium">Answer Score:</span>
+                                        <span className={`px-1.5 py-0.5 rounded font-semibold ${
+                                          message.answerScore >= 8
+                                            ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                                            : message.answerScore >= 6
+                                            ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                                            : "bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                                        }`}>
+                                          {message.answerScore}/10
+                                        </span>
+                                      </div>
+                                      {message.feedback && (
+                                        <p className="text-indigo-100/80 font-light leading-relaxed italic">
+                                          &quot;{message.feedback}&quot;
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             );

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { sessions, messages, users } from "@/lib/db/schema";
-import { eq, asc } from "drizzle-orm";
+import { sessions, messages, users, progress } from "@/lib/db/schema";
+import { eq, asc, and } from "drizzle-orm";
 import Groq from "groq-sdk";
 import { getInterviewerPrompt } from "@/lib/prompts/interviewer";
 
@@ -60,16 +60,47 @@ export async function POST(req: Request) {
       turnNumber: userTurnNumber,
     });
 
+    if (session.mode === "QUICK_FIRE" && userTurnNumber >= 10) {
+      const encoder = new TextEncoder();
+      const stream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(encoder.encode("[LIMIT_REACHED]"));
+          controller.close();
+        },
+      });
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/plain; charset=utf-8",
+        },
+      });
+    }
+
     const allConversationMessages = [
       ...history,
       { role: "user", content: lastMessage.content }
     ];
 
     let finalMessages: any[] = [];
+
+    // Fetch weak areas if in WEAKNESS_TRAINER mode
+    let weakAreas: string[] = [];
+    if (session.mode === "WEAKNESS_TRAINER") {
+      const [existingProgress] = await db
+        .select()
+        .from(progress)
+        .where(and(eq(progress.userId, userId), eq(progress.topic, session.topic)));
+      if (existingProgress && Array.isArray(existingProgress.weakAreas)) {
+        weakAreas = existingProgress.weakAreas as string[];
+      }
+    }
+
     const systemPrompt = getInterviewerPrompt({
       topic: session.topic,
       difficulty: session.difficulty,
       resumeText,
+      mode: session.mode as any,
+      subTopic: session.subTopic,
+      weakAreas,
     });
 
     const systemMessage = { role: "system", content: systemPrompt };
@@ -132,9 +163,11 @@ export async function POST(req: Request) {
       }
     }
 
-    // Call primary LLM (Llama 3.3 70B) for the streaming turn
+    const modelToUse = session.mode === "QUICK_FIRE" ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile";
+
+    // Call LLM for the streaming turn
     const chatCompletion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
+      model: modelToUse,
       messages: finalMessages,
       stream: true,
     });

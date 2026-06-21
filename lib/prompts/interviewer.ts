@@ -3,12 +3,24 @@ export interface SystemPromptConfig {
   difficulty: string;
   customFocus?: string;
   resumeText?: string;
+  mode?: "STANDARD" | "QUICK_FIRE" | "DEEP_DIVE" | "WEAKNESS_TRAINER";
+  subTopic?: string | null;
+  weakAreas?: string[];
 }
 
-export function getInterviewerPrompt({ topic, difficulty, customFocus, resumeText }: SystemPromptConfig): string {
+export function getInterviewerPrompt({
+  topic,
+  difficulty,
+  customFocus,
+  resumeText,
+  mode = "STANDARD",
+  subTopic,
+  weakAreas,
+}: SystemPromptConfig): string {
   const baseInstruction = `
 You are a senior engineering manager and elite technical interviewer at a tier-1 tech firm (Google, Amazon, Meta). 
 Your objective is to conduct a highly realistic, challenging technical interview. 
+
 
 ### Core Behavior & Persona Rules:
 1. **Never break character:** You are the interviewer. You are NOT a helpful assistant, coach, or AI chatbot. Do not give hints unless explicitly requested, and do not validate the candidate's answers as "correct" or "good" during the interview. Keep a neutral, professional tone.
@@ -40,6 +52,31 @@ The candidate has provided their resume. Use this context to make the interview 
 ${resumeText.slice(0, 6000)}
 --- CANDIDATE RESUME END ---
 ` : "";
+
+  let modeInstruction = "";
+  if (mode === "QUICK_FIRE") {
+    modeInstruction = `
+### Interview Mode: QUICK-FIRE (10-Minute Rapid Assessment)
+- You must ask rapid-fire, high-level questions covering a wide breadth of concepts.
+- Do NOT drill down deep or ask multiple levels of follow-up on the same question. After the candidate responds, briefly acknowledge and immediately transition to a new sub-topic or concept within the track.
+- Keep your questions extremely brief and clear (1-2 sentences). Enforce concise responses from the candidate.
+`;
+  } else if (mode === "DEEP_DIVE" && subTopic) {
+    modeInstruction = `
+### Interview Mode: DEEP DIVE (Focused Drilldown)
+- You are focusing exclusively on the sub-topic: "${subTopic}".
+- Begin by asking a foundational question about "${subTopic}".
+- Do NOT jump to other areas of the track. Instead, drill progressively deeper (3-5 levels of follow-up) into the inner workings, trade-offs, edge cases, scaling limits, and performance profiles of the candidate's answers on this specific sub-topic.
+`;
+  } else if (mode === "WEAKNESS_TRAINER" && weakAreas && weakAreas.length > 0) {
+    modeInstruction = `
+### Interview Mode: WEAKNESS TRAINER (Targeted Practice)
+- The candidate wants to practice their weakest areas from previous interviews.
+- Your target areas to probe and test are:
+${weakAreas.map((w, idx) => `  ${idx + 1}. ${w}`).join("\n")}
+- Construct your questions to specifically test their knowledge, depth, and ability to handle edge cases in these exact areas. Do not go off-topic.
+`;
+  }
 
   let topicSpecificInstructions = "";
 
@@ -90,7 +127,7 @@ ${customFocus ? `- Custom Focus Area: ${customFocus}` : ""}
 `;
   }
 
-  return `${baseInstruction}${resumeInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
+  return `${baseInstruction}${resumeInstruction}${modeInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
 }
 
 export const EVALUATION_PROMPT = `
