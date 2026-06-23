@@ -6,6 +6,7 @@ export interface SystemPromptConfig {
   mode?: "STANDARD" | "QUICK_FIRE" | "DEEP_DIVE" | "WEAKNESS_TRAINER";
   subTopic?: string | null;
   weakAreas?: string[];
+  customPersona?: string;
 }
 
 export function getInterviewerPrompt({
@@ -16,6 +17,7 @@ export function getInterviewerPrompt({
   mode = "STANDARD",
   subTopic,
   weakAreas,
+  customPersona,
 }: SystemPromptConfig): string {
   const baseInstruction = `
 You are a senior engineering manager and elite technical interviewer at a tier-1 tech firm (Google, Amazon, Meta). 
@@ -135,7 +137,14 @@ ${customFocus ? `- Custom Focus Area: ${customFocus}` : ""}
 `;
   }
 
-  return `${baseInstruction}${resumeInstruction}${modeInstruction}${subtopicInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
+  // Custom persona override injection block
+  const personaInstruction = customPersona ? `
+### Custom Interviewer Guidelines / Persona:
+Adhere strictly to these user-configured rules and stylistic constraints:
+${customPersona}
+` : "";
+
+  return `${baseInstruction}${resumeInstruction}${personaInstruction}${modeInstruction}${subtopicInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
 }
 
 export const EVALUATION_PROMPT = `
@@ -198,7 +207,12 @@ export const TRACK_SUBTOPICS: Record<string, string[]> = {
     "Dynamic Programming (Knapsack, Longest Common Subsequence)",
     "Binary Tree traversals (DFS/BFS) and Lowest Common Ancestor",
     "Merge Sort & Quick Sort variations (e.g. QuickSelect)",
-    "Monotonic Stack / Queue pattern"
+    "Monotonic Stack / Queue pattern",
+    "Union-Find (Disjoint Set) with Path Compression",
+    "A* Search Algorithm and Heuristics",
+    "Kruskal's & Prim's Minimum Spanning Tree algorithms",
+    "Segment Tree or Fenwick Tree for Range Queries",
+    "Floyd-Warshall All-Pairs Shortest Path algorithm"
   ],
   "system design": [
     "Designing a high-throughput global notification service",
@@ -210,7 +224,12 @@ export const TRACK_SUBTOPICS: Record<string, string[]> = {
     "Designing a collaborative real-time document editor (like Google Docs)",
     "Designing a web crawler and search indexer at scale",
     "Designing a distributed key-value store with cache consistency",
-    "Designing a global Content Delivery Network (CDN) edge cache"
+    "Designing a global Content Delivery Network (CDN) edge cache",
+    "Designing an Uber-like real-time geospatial ride-matching system",
+    "Designing a distributed metrics monitoring & alerting agent",
+    "Designing an ad-click tracking aggregator with low-latency dashboards",
+    "Designing a financial ledger database with transactional consistency",
+    "Designing a URL shortener service with high write volumes"
   ],
   "behavioral": [
     "Handling a project with highly ambiguous or shifting requirements",
@@ -220,7 +239,14 @@ export const TRACK_SUBTOPICS: Record<string, string[]> = {
     "Taking initiative to improve a broken internal system or process",
     "Delivering constructive feedback to a peer or manager",
     "Advocating for technical debt cleanup to stakeholders",
-    "Managing a high-performance feature delivery with limited resources"
+    "Managing a high-performance feature delivery with limited resources",
+    "Managing a project team through high-turnover transition periods",
+    "Dealing with an underperforming team member as a tech lead",
+    "Managing customer expectations when a major launch fails",
+    "Persuading engineering partners to adopt a new library or tool",
+    "Handling a situation where you made a major engineering mistake",
+    "Navigating conflicting project deadlines from different managers",
+    "Mentoring a junior developer to level them up into an independent contributor"
   ],
   "frontend/backend": [
     "Database sharding, read-replicas, and query optimization",
@@ -230,7 +256,14 @@ export const TRACK_SUBTOPICS: Record<string, string[]> = {
     "Optimizing Web Vitals, SSR, hydration, and code-splitting",
     "API gateway routing, rate limiting, and CORS configuration security",
     "Database transaction isolation levels and concurrency control",
-    "Message brokers (Kafka/RabbitMQ) for asynchronous task processing"
+    "Message brokers (Kafka/RabbitMQ) for asynchronous task processing",
+    "Distributed lock implementations (Redis Redlock vs ZooKeeper)",
+    "CSS layouts performance (Flexbox, Grid, reflows, and repaints)",
+    "Frontend global state management libraries trade-offs (Redux, Zustand, Recoil)",
+    "Graph APIs (GraphQL vs REST vs gRPC) query performance & payload design",
+    "Docker containers deployment configuration and multi-stage builds",
+    "Search engines integration (Elasticsearch vs Postgres full-text search)",
+    "Content Security Policy (CSP) and preventing XSS/CSRF vulnerabilities"
   ]
 };
 

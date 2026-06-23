@@ -21,6 +21,7 @@ import {
   Copy,
   Check,
   Printer,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
@@ -33,6 +34,9 @@ function HistoryContent() {
   const [selectedTopic, setSelectedTopic] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
 
+  const [deleteSessionId, setDeleteSessionId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   // Selected session for review
   const [reviewSession, setReviewSession] = useState<any>(null);
   const [reviewMessages, setReviewMessages] = useState<any[]>([]);
@@ -43,6 +47,28 @@ function HistoryContent() {
   const [togglingPublic, setTogglingPublic] = useState(false);
 
   const activeReviewId = searchParams.get("sessionId");
+
+  const confirmDelete = async () => {
+    if (!deleteSessionId) return;
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/sessions?sessionId=${deleteSessionId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== deleteSessionId));
+        if (reviewSession?.id === deleteSessionId) {
+          setReviewSession(null);
+          setReviewMessages([]);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to delete session:", e);
+    } finally {
+      setIsDeleting(false);
+      setDeleteSessionId(null);
+    }
+  };
 
   // Load all sessions
   useEffect(() => {
@@ -266,19 +292,43 @@ function HistoryContent() {
                   </div>
 
                   {isCompleted ? (
-                    <div className="text-right">
-                      <div className="text-xl font-extrabold text-foreground">
-                        {session.overallScore?.toFixed(1) || "0.0"}
-                        <span className="text-xs font-light text-muted-foreground">/10</span>
+                    <div className="flex items-start gap-x-2 text-right">
+                      <div>
+                        <div className="text-xl font-extrabold text-foreground">
+                          {session.overallScore?.toFixed(1) || "0.0"}
+                          <span className="text-xs font-light text-muted-foreground">/10</span>
+                        </div>
+                        <span className="text-[10px] text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
+                          Graded
+                        </span>
                       </div>
-                      <span className="text-[10px] text-emerald-500 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full">
-                        Graded
-                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteSessionId(session.id);
+                        }}
+                        className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
+                        title="Delete Mock Interview"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
                   ) : (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-bold uppercase animate-pulse border border-amber-500/10">
-                      Unfinished
-                    </span>
+                    <div className="flex items-start gap-x-2 text-right">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 font-semibold uppercase animate-pulse border border-amber-500/10">
+                        Unfinished
+                      </span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteSessionId(session.id);
+                        }}
+                        className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
+                        title="Delete Session"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   )}
                 </div>
 
@@ -580,6 +630,58 @@ function HistoryContent() {
                   className="px-5 py-2 rounded-xl bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 text-xs font-semibold text-foreground cursor-pointer transition"
                 >
                   Close Review
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal Overlay */}
+      <AnimatePresence>
+        {deleteSessionId && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setDeleteSessionId(null)}
+              className="fixed inset-0 bg-black z-[100] cursor-pointer"
+            />
+            {/* Modal */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="fixed inset-0 m-auto w-full max-w-sm h-fit bg-[#0F131E] border border-neutral-800 p-6 rounded-2xl z-[110] space-y-6 shadow-2xl"
+            >
+              <div className="space-y-2">
+                <h4 className="text-lg font-bold text-foreground">Delete Session?</h4>
+                <p className="text-xs text-muted-foreground leading-relaxed font-light">
+                  Permanently erase this mock interview evaluation scorecard and chat dialogue? This action cannot be undone.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-end gap-x-3">
+                <button
+                  onClick={() => setDeleteSessionId(null)}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-850 hover:bg-neutral-800 text-xs font-semibold text-muted-foreground hover:text-white transition cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  disabled={isDeleting}
+                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white transition cursor-pointer flex items-center gap-x-1.5 disabled:opacity-50"
+                >
+                  {isDeleting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-3.5 h-3.5" />
+                  )}
+                  Delete
                 </button>
               </div>
             </motion.div>

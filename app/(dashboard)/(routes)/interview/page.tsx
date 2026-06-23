@@ -45,10 +45,15 @@ export default function InterviewPage() {
 
   // Instantiating TextStreamChatTransport for compatibility with raw text stream from api/interview
   const transport = React.useMemo(() => {
+    let customPersona = "";
+    if (typeof window !== "undefined") {
+      customPersona = localStorage.getItem("conquer_pref_persona") || "";
+    }
     return new TextStreamChatTransport({
       api: "/api/interview",
       body: {
         sessionId: activeSessionId,
+        customPersona,
       },
     });
   }, [activeSessionId]);

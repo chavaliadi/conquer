@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Upload,
@@ -12,13 +13,28 @@ import {
   Sparkles,
   ShieldCheck,
   X,
+  Play,
+  Award,
+  Flame,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useInterviewStore } from "@/lib/store/interview-store";
 
 type UploadState = "idle" | "dragging" | "uploading" | "success" | "error";
 
+const tracks = [
+  "Data Structures & Algorithms",
+  "System Design",
+  "Behavioral",
+  "Frontend/Backend"
+];
+
+const difficulties = ["Easy", "Medium", "Hard"];
+
 export default function ResumePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const startSessionStore = useInterviewStore((state) => state.startSession);
 
   const [uploadState, setUploadState] = useState<UploadState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -29,6 +45,11 @@ export default function ResumePage() {
   } | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [deleting, setDeleting] = useState(false);
+
+  // Resume Launcher Settings
+  const [selectedTopic, setSelectedTopic] = useState("System Design");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("Medium");
+  const [loadingSession, setLoadingSession] = useState(false);
 
   // Load existing resume status on mount
   useEffect(() => {
@@ -126,6 +147,43 @@ export default function ResumePage() {
     if (file) handleUpload(file);
   };
 
+  const handleStartResumeInterview = async () => {
+    if (!resume?.hasResume) return;
+    setLoadingSession(true);
+
+    try {
+      const response = await fetch("/api/sessions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          topic: selectedTopic,
+          difficulty: selectedDifficulty,
+          mode: "STANDARD",
+          isResumeAware: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create resume-aware session");
+      }
+
+      const session = await response.json();
+      startSessionStore(
+        session.id,
+        session.topic,
+        session.difficulty,
+        session.mode,
+        session.subTopic
+      );
+      router.push("/interview");
+    } catch (error) {
+      console.error("Failed to start resume mock session:", error);
+      setLoadingSession(false);
+    }
+  };
+
   const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString(undefined, {
       month: "long",
@@ -174,61 +232,142 @@ export default function ResumePage() {
             <Loader2 className="w-5 h-5 animate-spin" /> Loading resume status...
           </div>
         ) : resume?.hasResume ? (
-          /* Active Resume Card */
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <Card className="p-6 border-emerald-500/15 bg-gradient-to-br from-emerald-950/20 via-card to-card space-y-5">
-              <div className="flex items-start justify-between gap-x-4">
-                <div className="flex items-start gap-x-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-x-2">
-                      <span className="text-sm font-bold text-foreground truncate max-w-[260px]">
-                        {resume.fileName}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/10 uppercase">
-                        Active
-                      </span>
+          /* Active Resume State */
+          <div className="space-y-8">
+            {/* Active Resume Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Card className="p-6 border-emerald-500/15 bg-gradient-to-br from-emerald-950/20 via-card to-card space-y-5">
+                <div className="flex items-start justify-between gap-x-4">
+                  <div className="flex items-start gap-x-3">
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 shrink-0">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-500" />
                     </div>
-                    <p className="text-xs text-muted-foreground font-light">
-                      Uploaded {resume.uploadedAt ? formatDate(resume.uploadedAt) : "recently"}
-                    </p>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-x-2">
+                        <span className="text-sm font-bold text-foreground truncate max-w-[260px]">
+                          {resume.fileName}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/10 uppercase">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-light">
+                        Uploaded {resume.uploadedAt ? formatDate(resume.uploadedAt) : "recently"}
+                      </p>
+                    </div>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-x-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-xs text-emerald-400 font-light">
+                  <ShieldCheck className="w-4 h-4 shrink-0" />
+                  Resume-Aware Mode is{" "}
+                  <span className="font-bold text-emerald-300">ACTIVE</span> — your next mock interviews will be personalized.
+                </div>
+
+                <div className="flex items-center justify-between border-t border-neutral-800 pt-4">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-xs font-semibold text-teal-400 hover:text-teal-350 transition cursor-pointer"
+                  >
+                    Replace Resume
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="flex items-center gap-x-1.5 text-xs font-semibold text-rose-500 hover:text-rose-400 transition cursor-pointer disabled:opacity-50"
+                  >
+                    {deleting ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-3.5 h-3.5" />
+                    )}
+                    Remove Resume
+                  </button>
+                </div>
+              </Card>
+            </motion.div>
+
+            {/* Resume-Aware Mock Interview Launcher */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="space-y-4"
+            >
+              <div className="flex items-center gap-x-2 text-foreground font-bold">
+                <Award className="w-5 h-5 text-teal-400 animate-pulse" />
+                <h4>Personalized Resume Interview Launcher</h4>
               </div>
 
-              <div className="flex items-center gap-x-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-xs text-emerald-400 font-light">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                Resume-Aware Mode is{" "}
-                <span className="font-bold text-emerald-300">ACTIVE</span> — your next mock interviews will be personalized.
-              </div>
+              <Card className="p-6 border-neutral-900 bg-neutral-900/20 backdrop-blur-sm space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  {/* Select Track */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                      Select Interview Track
+                    </label>
+                    <select
+                      value={selectedTopic}
+                      onChange={(e) => setSelectedTopic(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                    >
+                      {tracks.map((track) => (
+                        <option key={track} value={track}>
+                          {track}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-              <div className="flex items-center justify-between border-t border-neutral-800 pt-4">
+                  {/* Select Difficulty */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                      Select Difficulty
+                    </label>
+                    <div className="flex gap-x-2">
+                      {difficulties.map((diff) => {
+                        const isSelected = selectedDifficulty === diff;
+                        return (
+                          <button
+                            key={diff}
+                            onClick={() => setSelectedDifficulty(diff)}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer select-none
+                              ${isSelected
+                                ? "bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/10"
+                                : "bg-neutral-950 border-neutral-800 text-muted-foreground hover:border-neutral-700"
+                              }`}
+                          >
+                            {diff}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-semibold text-teal-450 hover:text-teal-400 transition cursor-pointer"
+                  onClick={handleStartResumeInterview}
+                  disabled={loadingSession}
+                  className="w-full py-3 rounded-xl bg-teal-600 hover:bg-teal-500 disabled:opacity-50 text-white font-bold flex items-center justify-center gap-x-2 transition cursor-pointer active:scale-99 shadow-lg shadow-teal-600/15"
                 >
-                  Replace Resume
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="flex items-center gap-x-1.5 text-xs font-semibold text-rose-500 hover:text-rose-400 transition cursor-pointer disabled:opacity-50"
-                >
-                  {deleting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  {loadingSession ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      Starting Personalized Workspace...
+                    </>
                   ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <>
+                      <Play className="w-4 h-4 fill-current" />
+                      Start Resume-Aware Interview
+                    </>
                   )}
-                  Remove Resume
                 </button>
-              </div>
-            </Card>
-          </motion.div>
+              </Card>
+            </motion.div>
+          </div>
         ) : (
           /* Drop Zone */
           <div

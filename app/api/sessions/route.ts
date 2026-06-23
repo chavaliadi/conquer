@@ -19,14 +19,16 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { topic, difficulty, mode = "STANDARD", subTopic = null } = body;
+    const { topic, difficulty, mode = "STANDARD", subTopic = null, isResumeAware = false } = body;
 
     if (!topic || !difficulty) {
       return new NextResponse("Missing topic or difficulty", { status: 400 });
     }
 
+    const finalResumeAware = isResumeAware === true || isResumeAware === "true";
+
     let finalSubTopic = subTopic;
-    if (!finalSubTopic && (mode === "STANDARD" || mode === "QUICK_FIRE")) {
+    if (!finalSubTopic && !finalResumeAware && (mode === "STANDARD" || mode === "QUICK_FIRE")) {
       finalSubTopic = getRandomSubTopic(topic);
     }
 
@@ -67,14 +69,15 @@ export async function POST(req: Request) {
       difficulty,
       mode,
       subTopic: finalSubTopic,
+      isResumeAware: finalResumeAware,
       status: "ACTIVE",
     }).returning();
 
-    // Generate first greeting / question (resume-aware if uploaded)
+    // Generate first greeting / question (resume-aware if uploaded and enabled)
     const systemPrompt = getInterviewerPrompt({
       topic,
       difficulty,
-      resumeText,
+      resumeText: finalResumeAware ? resumeText : undefined,
       mode,
       subTopic: finalSubTopic,
       weakAreas,
@@ -143,6 +146,32 @@ export async function GET(req: Request) {
     return NextResponse.json(userSessions);
   } catch (error) {
     console.error("[SESSIONS_GET_ERROR]", error);
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get("sessionId");
+
+    if (!sessionId) {
+      return new NextResponse("Missing session ID", { status: 400 });
+    }
+
+    // Delete session from DB ( cascade-deletes related messages in Postgres automatically )
+    await db
+      .delete(sessions)
+      .where(and(eq(sessions.id, sessionId), eq(sessions.userId, userId)));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("[SESSIONS_DELETE_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
 }

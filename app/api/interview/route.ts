@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const { messages: chatMessages, sessionId } = await req.json();
+    const { messages: chatMessages, sessionId, customPersona } = await req.json();
 
     if (!sessionId || !chatMessages || chatMessages.length === 0) {
       return new NextResponse("Missing parameters", { status: 400 });
@@ -111,10 +111,11 @@ export async function POST(req: Request) {
     const systemPrompt = getInterviewerPrompt({
       topic: session.topic,
       difficulty: session.difficulty,
-      resumeText,
+      resumeText: session.isResumeAware ? resumeText : undefined,
       mode: session.mode as any,
       subTopic: session.subTopic,
       weakAreas,
+      customPersona,
     });
 
     const systemMessage = { role: "system", content: systemPrompt };

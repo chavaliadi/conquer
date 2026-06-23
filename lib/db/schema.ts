@@ -24,6 +24,7 @@ export const sessions = pgTable("sessions", {
   report: jsonb("report"), // Stores { dimensionScores: { depth: 8, specificity: 7... }, strengths: [], gaps: [], suggestions: [], topicsNotCovered: [] }
   mode: text("mode").default("STANDARD").notNull(), // "STANDARD" | "QUICK_FIRE" | "DEEP_DIVE" | "WEAKNESS_TRAINER"
   subTopic: text("sub_topic"),
+  isResumeAware: boolean("is_resume_aware").default(false).notNull(),
   isPublic: boolean("is_public").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
