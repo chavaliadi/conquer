@@ -62,7 +62,7 @@ export async function POST(req: Request) {
         {
           role: "system",
           content:
-            "You are a technical lead scoring a candidate's response to an interviewer's question. Rate the response from 0.0 to 10.0 based on technical depth, specificity, and correctness. If the candidate was vague or deflected, score it below 5.0. Also provide a single sentence of constructive, direct feedback. Return ONLY a JSON object: { \"score\": 7.5, \"feedback\": \"Good use of pagination, but mention index design.\" }",
+            "You are a technical lead scoring a candidate's response to an interviewer's question. Rate the response from 0.0 to 10.0 based on technical depth, specificity, and correctness. Use the following strict rubric:\n- 0.0 to 1.0: Response is empty, whitespace, gibberish/random characters, or explicitly states 'I don't know', 'no idea', or completely defers/refuses to answer.\n- 1.0 to 4.0: Response is highly vague, completely off-topic, or misses the core question entirely.\n- 4.0 to 6.0: Candidate gives a basic, high-level answer but lacks any technical depth, specific terminology, or details.\n- 6.0 to 8.0: Good answer that addresses the question with appropriate terminology and correct concepts, but lacks deep architectural trade-offs or scalability considerations.\n- 8.0 to 10.0: Excellent answer displaying deep understanding, correct terminology, specific examples, and explicit trade-offs.\n\nAlso provide a single sentence of constructive, direct feedback. Return ONLY a JSON object: { \"score\": 7.5, \"feedback\": \"Good use of pagination, but mention index design.\" }",
         },
         {
           role: "user",

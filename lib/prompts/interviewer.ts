@@ -78,6 +78,14 @@ ${weakAreas.map((w, idx) => `  ${idx + 1}. ${w}`).join("\n")}
 `;
   }
 
+  let subtopicInstruction = "";
+  if (subTopic && mode !== "DEEP_DIVE") {
+    subtopicInstruction = `
+### Session Focus Area:
+The initial focus of the interview should start with or center around: "${subTopic}". Keep the questions flowing naturally, but use this as the starting scenario.
+`;
+  }
+
   let topicSpecificInstructions = "";
 
   switch (topic.toLowerCase()) {
@@ -127,7 +135,7 @@ ${customFocus ? `- Custom Focus Area: ${customFocus}` : ""}
 `;
   }
 
-  return `${baseInstruction}${resumeInstruction}${modeInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
+  return `${baseInstruction}${resumeInstruction}${modeInstruction}${subtopicInstruction}\n${topicSpecificInstructions}\n\nDifficulty level: ${difficulty}\nBegin the interview now by greeting the candidate and asking the first question.`;
 }
 
 export const EVALUATION_PROMPT = `
@@ -178,3 +186,58 @@ Generate a neutral, objective, and highly constructive evaluation report. Output
 
 Provide ONLY the raw JSON object inside a single markdown codeblock. Do not add any conversational text before or after the codeblock.
 `;
+
+export const TRACK_SUBTOPICS: Record<string, string[]> = {
+  "data structures & algorithms": [
+    "LRU Cache / LFU Cache design",
+    "Sliding Window and Two Pointer optimizations",
+    "Backtracking for Combinations and Permutations",
+    "Topological Sort and Cycle Detection in Graphs",
+    "Trie-based Prefix Search and Autocomplete",
+    "Dijkstra's Algorithm and Shortest Paths",
+    "Dynamic Programming (Knapsack, Longest Common Subsequence)",
+    "Binary Tree traversals (DFS/BFS) and Lowest Common Ancestor",
+    "Merge Sort & Quick Sort variations (e.g. QuickSelect)",
+    "Monotonic Stack / Queue pattern"
+  ],
+  "system design": [
+    "Designing a high-throughput global notification service",
+    "Designing a scalable real-time chat application (like WhatsApp)",
+    "Designing a live video streaming system (like YouTube/Netflix)",
+    "Designing a highly-available ticket booking platform (like Ticketmaster)",
+    "Designing a global distributed rate limiter",
+    "Designing a multiplayer game matchmaking server",
+    "Designing a collaborative real-time document editor (like Google Docs)",
+    "Designing a web crawler and search indexer at scale",
+    "Designing a distributed key-value store with cache consistency",
+    "Designing a global Content Delivery Network (CDN) edge cache"
+  ],
+  "behavioral": [
+    "Handling a project with highly ambiguous or shifting requirements",
+    "Resolving a major technical disagreement within a team",
+    "Diagnosing and resolving a high-severity production outage under pressure",
+    "Managing a critical deadline delay or project delay transition",
+    "Taking initiative to improve a broken internal system or process",
+    "Delivering constructive feedback to a peer or manager",
+    "Advocating for technical debt cleanup to stakeholders",
+    "Managing a high-performance feature delivery with limited resources"
+  ],
+  "frontend/backend": [
+    "Database sharding, read-replicas, and query optimization",
+    "React reactivity model, virtual DOM, and component rendering loops",
+    "OAuth 2.0 authorization, stateless JWTs, and secure session management",
+    "WebSockets vs Server-Sent Events (SSE) for low-latency updates",
+    "Optimizing Web Vitals, SSR, hydration, and code-splitting",
+    "API gateway routing, rate limiting, and CORS configuration security",
+    "Database transaction isolation levels and concurrency control",
+    "Message brokers (Kafka/RabbitMQ) for asynchronous task processing"
+  ]
+};
+
+export function getRandomSubTopic(topic: string): string {
+  const normalized = topic.toLowerCase().trim();
+  const subtopics = TRACK_SUBTOPICS[normalized];
+  if (!subtopics || subtopics.length === 0) return "";
+  const index = Math.floor(Math.random() * subtopics.length);
+  return subtopics[index];
+}

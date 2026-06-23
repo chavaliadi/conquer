@@ -219,12 +219,13 @@ export default function TopicSelector() {
         <div className="flex items-center gap-x-3 px-4 py-3 rounded-xl bg-neutral-900/50 border border-dashed border-neutral-800">
           <FileText className="w-4 h-4 text-neutral-500 shrink-0" />
           <p className="text-xs text-muted-foreground font-light leading-relaxed">
-            Upload your resume in{" "}
-            <a href="/settings" className="text-indigo-400 font-semibold hover:text-indigo-300 transition">Settings</a>{" "}
+            Upload your resume in the{" "}
+            <a href="/resume" className="text-teal-400 font-semibold hover:text-teal-350 transition">Resume Manager</a>{" "}
             to enable Resume-Aware interviews tailored to your background.
           </p>
         </div>
       )}
+
 
       {/* Step 1: Choose Topic */}
       <div className="space-y-4">

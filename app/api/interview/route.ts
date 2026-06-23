@@ -10,6 +10,20 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
+function getMessageText(message: any): string {
+  if (!message) return "";
+  if (typeof message.content === "string" && message.content) {
+    return message.content;
+  }
+  if (Array.isArray(message.parts)) {
+    return message.parts
+      .filter((part: any) => part.type === "text")
+      .map((part: any) => part.text)
+      .join("");
+  }
+  return "";
+}
+
 export async function POST(req: Request) {
   try {
     const { userId } = await auth();
@@ -56,7 +70,7 @@ export async function POST(req: Request) {
     await db.insert(messages).values({
       sessionId,
       role: "user",
-      content: lastMessage.content,
+      content: getMessageText(lastMessage),
       turnNumber: userTurnNumber,
     });
 
@@ -77,7 +91,7 @@ export async function POST(req: Request) {
 
     const allConversationMessages = [
       ...history,
-      { role: "user", content: lastMessage.content }
+      { role: "user", content: getMessageText(lastMessage) }
     ];
 
     let finalMessages: any[] = [];

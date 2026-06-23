@@ -4,16 +4,14 @@ import { db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-// Force Node.js runtime — pdf-parse requires native Node modules (fs, Buffer)
+// Force Node.js runtime — unpdf works in both edge and node, keeping nodejs to match previous database connection setup
 export const runtime = "nodejs";
 
 async function parsePdf(buffer: Buffer): Promise<string> {
-  // Dynamic import to keep this server-only
-  // pdf-parse may export as ESM default or as CJS module root — handle both
-  const mod = await import("pdf-parse");
-  const pdfParse = (mod as any).default ?? mod;
-  const result = await pdfParse(buffer);
-  return result.text;
+  const { getDocumentProxy, extractText } = await import("unpdf");
+  const pdf = await getDocumentProxy(new Uint8Array(buffer));
+  const { text } = await extractText(pdf, { mergePages: true });
+  return text;
 }
 
 export async function POST(req: Request) {

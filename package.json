@@ -25,15 +25,14 @@
     "lucide-react": "^1.17.0",
     "motion": "^12.40.0",
     "next": "^15.3.3",
-    "pdf-parse": "^2.4.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "tailwind-merge": "^2.3.0",
+    "unpdf": "^1.6.2",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@types/node": "^22",
-    "@types/pdf-parse": "^1.1.5",
     "@types/react": "^19.2.16",
     "@types/react-dom": "^19.2.3",
     "drizzle-kit": "^0.31.10",

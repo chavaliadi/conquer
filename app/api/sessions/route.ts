@@ -5,7 +5,7 @@ import { users, sessions, messages, progress } from "@/lib/db/schema";
 import { eq, desc, and } from "drizzle-orm";
 
 import Groq from "groq-sdk";
-import { getInterviewerPrompt } from "@/lib/prompts/interviewer";
+import { getInterviewerPrompt, getRandomSubTopic } from "@/lib/prompts/interviewer";
 
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
@@ -23,6 +23,11 @@ export async function POST(req: Request) {
 
     if (!topic || !difficulty) {
       return new NextResponse("Missing topic or difficulty", { status: 400 });
+    }
+
+    let finalSubTopic = subTopic;
+    if (!finalSubTopic && (mode === "STANDARD" || mode === "QUICK_FIRE")) {
+      finalSubTopic = getRandomSubTopic(topic);
     }
 
     // Sync Clerk User with DB
@@ -61,7 +66,7 @@ export async function POST(req: Request) {
       topic,
       difficulty,
       mode,
-      subTopic,
+      subTopic: finalSubTopic,
       status: "ACTIVE",
     }).returning();
 
@@ -71,7 +76,7 @@ export async function POST(req: Request) {
       difficulty,
       resumeText,
       mode,
-      subTopic,
+      subTopic: finalSubTopic,
       weakAreas,
     });
 

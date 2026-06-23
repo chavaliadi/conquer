@@ -1,137 +1,48 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import React, { useState, useEffect } from "react";
+import { motion } from "motion/react";
 import {
-  Upload,
-  FileText,
-  Trash2,
-  CheckCircle2,
-  AlertTriangle,
+  Settings,
+  Shield,
+  Key,
+  User,
+  CheckCircle,
   Loader2,
-  Sparkles,
-  ShieldCheck,
-  X,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
-type UploadState = "idle" | "dragging" | "uploading" | "success" | "error";
-
 export default function SettingsPage() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [role, setRole] = useState("Fullstack Engineer");
+  const [experience, setExperience] = useState("Mid-level");
+  const [customKey, setCustomKey] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
-  const [uploadState, setUploadState] = useState<UploadState>("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [resume, setResume] = useState<{
-    hasResume: boolean;
-    fileName: string | null;
-    uploadedAt: string | null;
-  } | null>(null);
-  const [loadingStatus, setLoadingStatus] = useState(true);
-  const [deleting, setDeleting] = useState(false);
-
-  // Load existing resume status on mount
+  // Load preferences from localStorage on mount (mock preference storage)
   useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch("/api/resume/upload");
-        if (res.ok) {
-          const data = await res.json();
-          setResume(data);
-        }
-      } catch (e) {
-        console.error("Failed to load resume status:", e);
-      } finally {
-        setLoadingStatus(false);
-      }
-    };
-    fetchStatus();
+    const savedRole = localStorage.getItem("conquer_pref_role");
+    const savedExp = localStorage.getItem("conquer_pref_exp");
+    const savedKey = localStorage.getItem("conquer_pref_key");
+    if (savedRole) setRole(savedRole);
+    if (savedExp) setExperience(savedExp);
+    if (savedKey) setCustomKey(savedKey);
   }, []);
 
-  const handleUpload = async (file: File) => {
-    if (file.type !== "application/pdf") {
-      setErrorMessage("Only PDF files are accepted.");
-      setUploadState("error");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage("File too large — maximum 5MB.");
-      setUploadState("error");
-      return;
-    }
+  const handleSave = () => {
+    setIsSaving(true);
+    setSaveSuccess(false);
 
-    setUploadState("uploading");
-    setErrorMessage("");
+    setTimeout(() => {
+      localStorage.setItem("conquer_pref_role", role);
+      localStorage.setItem("conquer_pref_exp", experience);
+      localStorage.setItem("conquer_pref_key", customKey);
+      setIsSaving(false);
+      setSaveSuccess(true);
 
-    const formData = new FormData();
-    formData.append("resume", file);
-
-    try {
-      const res = await fetch("/api/resume/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error(msg || "Upload failed");
-      }
-
-      const data = await res.json();
-      setUploadState("success");
-      setResume({
-        hasResume: true,
-        fileName: data.fileName,
-        uploadedAt: new Date().toISOString(),
-      });
-    } catch (err: any) {
-      setErrorMessage(err.message || "Upload failed. Please try again.");
-      setUploadState("error");
-    }
+      setTimeout(() => setSaveSuccess(false), 2500);
+    }, 800);
   };
-
-  const handleDelete = async () => {
-    setDeleting(true);
-    try {
-      const res = await fetch("/api/resume/upload", { method: "DELETE" });
-      if (res.ok) {
-        setResume({ hasResume: false, fileName: null, uploadedAt: null });
-        setUploadState("idle");
-      }
-    } catch (e) {
-      console.error("Failed to delete resume:", e);
-    } finally {
-      setDeleting(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setUploadState("idle");
-    const file = e.dataTransfer.files[0];
-    if (file) handleUpload(file);
-  };
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    setUploadState("dragging");
-  };
-
-  const handleDragLeave = () => {
-    if (uploadState === "dragging") setUploadState("idle");
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleUpload(file);
-  };
-
-  const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString(undefined, {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-10 pb-24">
@@ -141,160 +52,127 @@ export default function SettingsPage() {
           Settings
         </h2>
         <p className="text-muted-foreground text-sm font-light">
-          Configure your interview profile to enable personalized AI prep.
+          Configure your mock interview preferences and API preferences.
         </p>
       </div>
 
-      {/* Resume Upload Section */}
-      <div className="space-y-5">
-        <div className="flex items-center gap-x-3">
-          <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/15">
-            <FileText className="w-5 h-5 text-indigo-400" />
+      <div className="space-y-8">
+        {/* Profile Settings Card */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-x-3">
+            <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/15">
+              <User className="w-5 h-5 text-orange-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">Interview Profile</h3>
+              <p className="text-xs text-muted-foreground font-light">
+                Configure your target domain to personalize the default questions.
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-lg font-bold text-foreground">Resume Upload</h3>
-            <p className="text-xs text-muted-foreground font-light">
-              Upload your PDF resume to activate Resume-Aware interview mode.
-            </p>
-          </div>
+
+          <Card className="p-6 border-neutral-900 bg-card space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Target Role Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                  Target Engineering Role
+                </label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                >
+                  <option value="Frontend Engineer">Frontend Engineer</option>
+                  <option value="Backend Engineer">Backend Engineer</option>
+                  <option value="Fullstack Engineer">Fullstack Engineer</option>
+                  <option value="Mobile Engineer (iOS/Android)">Mobile Engineer (iOS/Android)</option>
+                  <option value="DevOps / SRE Engineer">DevOps / SRE Engineer</option>
+                  <option value="Machine Learning / AI Engineer">Machine Learning / AI Engineer</option>
+                </select>
+              </div>
+
+              {/* Experience Level */}
+              <div className="space-y-2">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                  Target Experience Level
+                </label>
+                <select
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-orange-500 focus:outline-none"
+                >
+                  <option value="Junior (0-2 years)">Junior (0-2 years)</option>
+                  <option value="Mid-level (2-5 years)">Mid-level (2-5 years)</option>
+                  <option value="Senior (5+ years)">Senior (5+ years)</option>
+                  <option value="Staff / Principal Developer">Staff / Principal Developer</option>
+                </select>
+              </div>
+            </div>
+          </Card>
         </div>
 
-        {/* Resume-Aware Info Banner */}
-        <div className="flex items-start gap-x-3 p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
-          <Sparkles className="w-4 h-4 text-indigo-400 mt-0.5 shrink-0" />
-          <p className="text-xs text-indigo-300/80 leading-relaxed">
-            When a resume is uploaded, the AI interviewer will reference your{" "}
-            <span className="text-indigo-300 font-semibold">specific projects, companies, and tech stack</span>{" "}
-            to ask highly personalized questions — just like a real FAANG interview.
-          </p>
+        {/* Security & Keys Card */}
+        <div className="space-y-4">
+          <div className="flex items-center gap-x-3">
+            <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/15">
+              <Key className="w-5 h-5 text-orange-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-foreground">API Credentials</h3>
+              <p className="text-xs text-muted-foreground font-light">
+                Optionally use your own custom Groq API Key for query generation.
+              </p>
+            </div>
+          </div>
+
+          <Card className="p-6 border-neutral-900 bg-card space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider block">
+                Custom Groq API Key
+              </label>
+              <input
+                type="password"
+                value={customKey}
+                onChange={(e) => setCustomKey(e.target.value)}
+                placeholder="gsk_..."
+                className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-2.5 text-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 placeholder-neutral-700"
+              />
+              <p className="text-[10px] text-muted-foreground font-light flex items-center gap-x-1.5 pt-1.5">
+                <Shield className="w-3.5 h-3.5 text-orange-500" />
+                Your credentials are saved locally in your browser and never transit outside our mock API servers.
+              </p>
+            </div>
+          </Card>
         </div>
 
-        {loadingStatus ? (
-          <div className="flex items-center justify-center h-40 gap-x-2 text-muted-foreground text-sm">
-            <Loader2 className="w-5 h-5 animate-spin" /> Loading resume status...
-          </div>
-        ) : resume?.hasResume ? (
-          /* Active Resume Card */
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
+        {/* Save button and alerts */}
+        <div className="flex items-center gap-x-4 pt-4">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-8 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold flex items-center justify-center gap-x-2 transition cursor-pointer active:scale-98 disabled:opacity-50"
           >
-            <Card className="p-6 border-emerald-500/15 bg-gradient-to-br from-emerald-950/20 via-card to-card space-y-5">
-              <div className="flex items-start justify-between gap-x-4">
-                <div className="flex items-start gap-x-3">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 shrink-0">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-x-2">
-                      <span className="text-sm font-bold text-foreground truncate max-w-[260px]">
-                        {resume.fileName}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold border border-emerald-500/10 uppercase">
-                        Active
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground font-light">
-                      Uploaded {resume.uploadedAt ? formatDate(resume.uploadedAt) : "recently"}
-                    </p>
-                  </div>
-                </div>
-              </div>
+            {isSaving ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Saving Changes
+              </>
+            ) : (
+              "Save Settings"
+            )}
+          </button>
 
-              <div className="flex items-center gap-x-2 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10 text-xs text-emerald-400 font-light">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                Resume-Aware Mode is{" "}
-                <span className="font-bold text-emerald-300">ACTIVE</span> — your next mock interviews will be personalized.
-              </div>
-
-              <div className="flex items-center justify-between border-t border-neutral-800 pt-4">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition cursor-pointer"
-                >
-                  Replace Resume
-                </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={deleting}
-                  className="flex items-center gap-x-1.5 text-xs font-semibold text-rose-500 hover:text-rose-400 transition cursor-pointer disabled:opacity-50"
-                >
-                  {deleting ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="w-3.5 h-3.5" />
-                  )}
-                  Remove Resume
-                </button>
-              </div>
-            </Card>
-          </motion.div>
-        ) : (
-          /* Drop Zone */
-          <div
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onClick={() => uploadState === "idle" || uploadState === "error" ? fileInputRef.current?.click() : null}
-            className={`relative rounded-2xl border-2 border-dashed transition-all duration-300 min-h-[220px] flex flex-col items-center justify-center gap-y-4 px-8 cursor-pointer select-none
-              ${uploadState === "dragging"
-                ? "border-indigo-500 bg-indigo-500/5 scale-[1.01]"
-                : uploadState === "uploading"
-                  ? "border-neutral-700 bg-card cursor-not-allowed"
-                  : uploadState === "error"
-                    ? "border-rose-500/40 bg-rose-500/5"
-                    : "border-neutral-800 hover:border-neutral-700 bg-card hover:bg-neutral-900/40"
-              }`}
-          >
-            <AnimatePresence mode="wait">
-              {uploadState === "uploading" ? (
-                <motion.div key="uploading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-y-3">
-                  <Loader2 className="w-10 h-10 text-indigo-500 animate-spin" />
-                  <p className="text-sm text-muted-foreground font-light">Parsing your PDF resume...</p>
-                </motion.div>
-              ) : uploadState === "error" ? (
-                <motion.div key="error" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-y-3 text-center">
-                  <div className="p-3 rounded-full bg-rose-500/10 border border-rose-500/20">
-                    <AlertTriangle className="w-7 h-7 text-rose-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-rose-400">Upload Failed</p>
-                    <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">{errorMessage}</p>
-                  </div>
-                  <button
-                    onClick={(e) => { e.stopPropagation(); setUploadState("idle"); }}
-                    className="text-xs text-indigo-400 hover:text-indigo-300 transition font-semibold flex items-center gap-x-1"
-                  >
-                    <X className="w-3 h-3" /> Try Again
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-y-3 text-center">
-                  <div className={`p-4 rounded-2xl border transition-all duration-300 ${uploadState === "dragging" ? "bg-indigo-500/15 border-indigo-500/30" : "bg-neutral-900 border-neutral-800"}`}>
-                    <Upload className={`w-8 h-8 transition-colors ${uploadState === "dragging" ? "text-indigo-400" : "text-neutral-500"}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">
-                      {uploadState === "dragging" ? "Drop your PDF here" : "Drag & drop your resume"}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      or <span className="text-indigo-400 font-semibold">click to browse</span> — PDF only, max 5MB
-                    </p>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )}
-
-        {/* Hidden file input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="application/pdf"
-          className="hidden"
-          onChange={handleFileChange}
-        />
+          {saveSuccess && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-x-1.5 text-xs text-emerald-450 font-medium"
+            >
+              <CheckCircle className="w-4 h-4 text-emerald-500" />
+              Settings updated successfully!
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );
