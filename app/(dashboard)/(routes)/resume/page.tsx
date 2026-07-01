@@ -194,8 +194,8 @@ export default function ResumePage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-10 pb-24">
       {/* Header */}
-      <div className="border-b border-neutral-800 pb-6 space-y-1">
-        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+      <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6 space-y-1">
+        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
           Resume Manager
         </h2>
         <p className="text-muted-foreground text-sm font-light">
@@ -239,7 +239,7 @@ export default function ResumePage() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
             >
-              <Card className="p-6 border-emerald-500/15 bg-gradient-to-br from-emerald-950/20 via-card to-card space-y-5">
+              <Card className="p-6 border-emerald-500/15 bg-gradient-to-br from-emerald-50/20 dark:from-emerald-950/20 via-card to-card space-y-5">
                 <div className="flex items-start justify-between gap-x-4">
                   <div className="flex items-start gap-x-3">
                     <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 shrink-0">
@@ -267,7 +267,7 @@ export default function ResumePage() {
                   <span className="font-bold text-emerald-300">ACTIVE</span> — your next mock interviews will be personalized.
                 </div>
 
-                <div className="flex items-center justify-between border-t border-neutral-800 pt-4">
+                <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-4">
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     className="text-xs font-semibold text-teal-400 hover:text-teal-350 transition cursor-pointer"
@@ -302,7 +302,7 @@ export default function ResumePage() {
                 <h4>Personalized Resume Interview Launcher</h4>
               </div>
 
-              <Card className="p-6 border-neutral-900 bg-neutral-900/20 backdrop-blur-sm space-y-6">
+              <Card className="p-6 border-neutral-200 dark:border-neutral-900 bg-neutral-50 dark:bg-neutral-900/20 backdrop-blur-sm space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* Select Track */}
                   <div className="space-y-2">
@@ -312,7 +312,7 @@ export default function ResumePage() {
                     <select
                       value={selectedTopic}
                       onChange={(e) => setSelectedTopic(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-teal-500 focus:outline-none"
+                      className="w-full px-3 py-2 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-teal-500 focus:outline-none"
                     >
                       {tracks.map((track) => (
                         <option key={track} value={track}>
@@ -337,7 +337,7 @@ export default function ResumePage() {
                             className={`flex-1 py-1.5 rounded-lg text-xs font-semibold border transition cursor-pointer select-none
                               ${isSelected
                                 ? "bg-teal-600 border-teal-600 text-white shadow-md shadow-teal-600/10"
-                                : "bg-neutral-950 border-neutral-800 text-muted-foreground hover:border-neutral-700"
+                                : "bg-white dark:bg-neutral-950 border-neutral-200 dark:border-neutral-800 text-muted-foreground hover:border-neutral-300 dark:hover:border-neutral-700"
                               }`}
                           >
                             {diff}
@@ -379,10 +379,10 @@ export default function ResumePage() {
               ${uploadState === "dragging"
                 ? "border-teal-500 bg-teal-500/5 scale-[1.01]"
                 : uploadState === "uploading"
-                  ? "border-neutral-700 bg-card cursor-not-allowed"
+                  ? "border-neutral-300 dark:border-neutral-700 bg-card cursor-not-allowed"
                   : uploadState === "error"
                     ? "border-rose-500/40 bg-rose-500/5"
-                    : "border-neutral-800 hover:border-neutral-700 bg-card hover:bg-neutral-900/40"
+                    : "border-neutral-250 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-card hover:bg-neutral-50 dark:hover:bg-neutral-900/40"
               }`}
           >
             <AnimatePresence mode="wait">
@@ -409,7 +409,7 @@ export default function ResumePage() {
                 </motion.div>
               ) : (
                 <motion.div key="idle" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center gap-y-3 text-center">
-                  <div className={`p-4 rounded-2xl border transition-all duration-300 ${uploadState === "dragging" ? "bg-teal-500/15 border-teal-500/30" : "bg-neutral-900 border-neutral-800"}`}>
+                  <div className={`p-4 rounded-2xl border transition-all duration-300 ${uploadState === "dragging" ? "bg-teal-500/15 border-teal-500/30" : "bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800"}`}>
                     <Upload className={`w-8 h-8 transition-colors ${uploadState === "dragging" ? "text-teal-400" : "text-neutral-500"}`} />
                   </div>
                   <div>

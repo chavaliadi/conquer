@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "motion/react";
 import { 
   ArrowRight, 
@@ -38,12 +39,17 @@ export default function LandingPage() {
       {/* Header / Navbar */}
       <header className="w-full max-w-7xl mx-auto px-6 py-6 flex items-center justify-between border-b border-slate-900 z-10">
         <div className="flex items-center gap-x-2.5">
-          <div className="p-2 bg-indigo-600/10 rounded-xl border border-indigo-500/20">
-            <Terminal className="w-6 h-6 text-indigo-500" />
-          </div>
-          <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">
-            Conquer
-          </span>
+          <Link href="/" className="flex items-center">
+            <div className="relative h-10 w-44">
+              <Image
+                src="/logo-horizontal-dark.png"
+                alt="Conquer Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </Link>
         </div>
         <div className="flex items-center gap-x-4">
           <Link href="/sign-in">
@@ -67,6 +73,19 @@ export default function LandingPage() {
           animate="visible"
           className="space-y-8 max-w-3xl"
         >
+          {/* Primary Logo Showcase */}
+          <motion.div variants={itemVariants} className="flex justify-center mb-4">
+            <div className="relative w-44 h-44 md:w-52 md:h-52 select-none pointer-events-none drop-shadow-[0_0_40px_rgba(99,102,241,0.25)]">
+              <Image
+                src="/logo-primary.png"
+                alt="Conquer Logo"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
+
           {/* Tagline Badge */}
           <motion.div variants={itemVariants} className="inline-flex items-center gap-x-2 px-3.5 py-1.5 rounded-full bg-indigo-500/5 border border-indigo-500/10 text-indigo-400 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" /> AI-Powered Interview Simulation

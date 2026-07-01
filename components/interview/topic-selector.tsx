@@ -216,11 +216,11 @@ export default function TopicSelector() {
           </p>
         </div>
       ) : (
-        <div className="flex items-center gap-x-3 px-4 py-3 rounded-xl bg-neutral-900/50 border border-dashed border-neutral-800">
+        <div className="flex items-center gap-x-3 px-4 py-3 rounded-xl bg-neutral-100 dark:bg-neutral-900/50 border border-dashed border-neutral-200 dark:border-neutral-800">
           <FileText className="w-4 h-4 text-neutral-500 shrink-0" />
           <p className="text-xs text-muted-foreground font-light leading-relaxed">
             Upload your resume in the{" "}
-            <a href="/resume" className="text-teal-400 font-semibold hover:text-teal-350 transition">Resume Manager</a>{" "}
+            <a href="/resume" className="text-teal-500 dark:text-teal-400 font-semibold hover:text-teal-600 dark:hover:text-teal-350 transition animate-pulse">Resume Manager</a>{" "}
             to enable Resume-Aware interviews tailored to your background.
           </p>
         </div>
@@ -340,7 +340,7 @@ export default function TopicSelector() {
                     <div className="flex items-center gap-x-2">
                       <h4 className="font-semibold text-foreground">{modeItem.name}</h4>
                       {!isUnlocked && (
-                        <span className="flex items-center gap-x-1 text-[10px] bg-neutral-800 text-neutral-400 px-1.5 py-0.5 rounded border border-neutral-700">
+                        <span className="flex items-center gap-x-1 text-[10px] bg-neutral-200 dark:bg-neutral-800 text-neutral-500 dark:text-neutral-400 px-1.5 py-0.5 rounded border border-neutral-300 dark:border-neutral-700">
                           <Lock className="w-2.5 h-2.5" /> Locked
                         </span>
                       )}

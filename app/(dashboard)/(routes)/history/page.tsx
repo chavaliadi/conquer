@@ -201,8 +201,8 @@ function HistoryContent() {
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-8 pb-24 relative">
       
       {/* Header */}
-      <div className="border-b border-neutral-850 pb-6 space-y-1">
-        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+      <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6 space-y-1">
+        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
           Session History
         </h2>
         <p className="text-muted-foreground text-sm font-light">
@@ -211,7 +211,7 @@ function HistoryContent() {
       </div>
 
       {/* Filter Toolbar */}
-      <div className="flex flex-wrap items-center gap-4 bg-neutral-900/30 p-4 rounded-xl border border-neutral-900">
+      <div className="flex flex-wrap items-center gap-4 bg-neutral-50 dark:bg-neutral-900/30 p-4 rounded-xl border border-neutral-200 dark:border-neutral-900">
         <div className="flex items-center gap-x-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
           <Filter className="w-3.5 h-3.5" /> Filters
         </div>
@@ -222,7 +222,7 @@ function HistoryContent() {
           <select
             value={selectedTopic}
             onChange={(e) => setSelectedTopic(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
           >
             {uniqueTopics.map((topic) => (
               <option key={topic} value={topic}>
@@ -238,7 +238,7 @@ function HistoryContent() {
           <select
             value={selectedDifficulty}
             onChange={(e) => setSelectedDifficulty(e.target.value)}
-            className="px-3 py-1.5 rounded-lg border border-neutral-800 bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+            className="px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 text-xs font-medium focus:ring-1 focus:ring-indigo-500 focus:outline-none"
           >
             {uniqueDifficulties.map((diff) => (
               <option key={diff} value={diff}>
@@ -273,7 +273,7 @@ function HistoryContent() {
                 key={session.id}
                 whileHover={{ y: -2 }}
                 onClick={() => isCompleted && openReview(session)}
-                className={`group border border-neutral-900 rounded-2xl bg-card hover:border-neutral-800 p-5 flex flex-col justify-between gap-y-4 transition duration-300 relative overflow-hidden ${
+                className={`group border border-neutral-200 dark:border-neutral-900 rounded-2xl bg-card hover:border-neutral-300 dark:hover:border-neutral-800 p-5 flex flex-col justify-between gap-y-4 transition duration-300 relative overflow-hidden ${
                   isCompleted ? "cursor-pointer" : "cursor-not-allowed opacity-75"
                 }`}
               >
@@ -283,7 +283,7 @@ function HistoryContent() {
                       {session.topic}
                     </h3>
                     <div className="flex items-center gap-x-2 text-xs text-muted-foreground">
-                      <span className="px-2 py-0.5 rounded bg-neutral-900 border border-neutral-850 font-medium">
+                      <span className="px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 font-medium">
                         {session.difficulty}
                       </span>
                       <span>•</span>
@@ -307,7 +307,7 @@ function HistoryContent() {
                           e.stopPropagation();
                           setDeleteSessionId(session.id);
                         }}
-                        className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
+                        className="p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-850 text-neutral-500 dark:text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
                         title="Delete Mock Interview"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -323,7 +323,7 @@ function HistoryContent() {
                           e.stopPropagation();
                           setDeleteSessionId(session.id);
                         }}
-                        className="p-1.5 rounded-lg bg-neutral-900 border border-neutral-850 hover:bg-neutral-850 text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
+                        className="p-1.5 rounded-lg bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-850 text-neutral-500 dark:text-neutral-400 hover:text-rose-500 transition cursor-pointer shrink-0"
                         title="Delete Session"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -377,7 +377,7 @@ function HistoryContent() {
               className="fixed top-0 right-0 h-screen w-full md:w-[75%] lg:w-[60%] bg-[#0B0F19] border-l border-neutral-900 z-50 flex flex-col justify-between overflow-hidden shadow-2xl"
             >
               {/* Drawer Header */}
-              <div className="border-b border-neutral-900 p-5 flex items-center justify-between bg-card">
+              <div className="border-b border-neutral-200 dark:border-neutral-900 p-5 flex items-center justify-between bg-card">
                 <div>
                   <h3 className="font-extrabold text-lg text-foreground truncate max-w-[250px] md:max-w-md">
                     {reviewSession.topic}
@@ -388,7 +388,7 @@ function HistoryContent() {
                 </div>
                 <button
                   onClick={closeReview}
-                  className="p-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white transition cursor-pointer"
+                  className="p-2 rounded-lg bg-neutral-100 dark:bg-neutral-900 hover:bg-neutral-250 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -415,7 +415,7 @@ function HistoryContent() {
                 </div>
 
                 {/* Share & Print Action Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-card border border-neutral-900 text-xs">
+                <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-xl bg-card border border-neutral-200 dark:border-neutral-900 text-xs">
                   <div className="flex items-center gap-x-6">
                     {/* Public Share Toggle */}
                     <div className="flex items-center gap-x-2">
@@ -425,7 +425,7 @@ function HistoryContent() {
                         onClick={togglePublicVisibility}
                         disabled={togglingPublic}
                         className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer flex items-center ${
-                          reviewSession.isPublic ? "bg-indigo-600 justify-end" : "bg-neutral-800 justify-start"
+                          reviewSession.isPublic ? "bg-indigo-600 justify-end" : "bg-neutral-200 dark:bg-neutral-800 justify-start"
                         }`}
                       >
                         <motion.div
@@ -439,7 +439,7 @@ function HistoryContent() {
                     {reviewSession.isPublic && (
                       <button
                         onClick={copyShareLink}
-                        className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-indigo-950/40 text-indigo-400 border border-indigo-900/40 hover:bg-indigo-900/20 transition cursor-pointer"
+                        className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-indigo-50 dark:bg-indigo-950/40 text-indigo-500 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/40 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/20 transition cursor-pointer"
                       >
                         {copiedLink ? (
                           <>
@@ -457,7 +457,7 @@ function HistoryContent() {
                   {/* Print Button */}
                   <button
                     onClick={() => window.open(`/session/${reviewSession.id}/print`, "_blank")}
-                    className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-neutral-900 border border-neutral-800 hover:bg-neutral-850 hover:text-white transition cursor-pointer text-muted-foreground"
+                    className="flex items-center gap-x-1.5 px-3 py-1 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-850 hover:text-neutral-900 dark:hover:text-white transition cursor-pointer text-muted-foreground"
                   >
                     <Printer className="w-3.5 h-3.5" /> Export PDF Report
                   </button>
@@ -468,7 +468,7 @@ function HistoryContent() {
                   scorecard={
                     <div className="space-y-6">
                       {/* Dimension Scores */}
-                      <Card className="bg-card/30 border-neutral-900 p-5 space-y-4">
+                      <Card className="bg-card/30 border-neutral-200 dark:border-neutral-900 p-5 space-y-4">
                         <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-x-2">
                           <TrendingUp className="w-3.5 h-3.5 text-indigo-500" /> Dimension breakdown
                         </h4>
@@ -488,7 +488,7 @@ function HistoryContent() {
                                   <span className="text-muted-foreground">{displayName}</span>
                                   <span className="text-foreground">{score}/10</span>
                                 </div>
-                                <div className="w-full bg-neutral-800 h-1.5 rounded-full overflow-hidden">
+                                <div className="w-full bg-neutral-200 dark:bg-neutral-800 h-1.5 rounded-full overflow-hidden">
                                   <div className={`h-full rounded-full ${barColor}`} style={{ width: `${score * 10}%` }} />
                                 </div>
                               </div>
@@ -529,13 +529,13 @@ function HistoryContent() {
                       </div>
 
                       {/* Suggestions */}
-                      <div className="p-5 rounded-xl bg-card border border-neutral-900 space-y-3">
+                      <div className="p-5 rounded-xl bg-card border border-neutral-200 dark:border-neutral-900 space-y-3">
                         <h4 className="text-sm font-semibold text-indigo-500 flex items-center gap-x-2">
                           <Lightbulb className="w-4 h-4" /> Study Recommendations
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {(reviewSession.report?.suggestions || []).map((sugg: string, i: number) => (
-                            <div key={i} className="p-3.5 rounded-xl bg-neutral-900/40 border border-neutral-950 text-xs leading-relaxed text-foreground/90">
+                            <div key={i} className="p-3.5 rounded-xl bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-950 text-xs leading-relaxed text-foreground/90">
                               {sugg}
                             </div>
                           ))}
@@ -550,7 +550,7 @@ function HistoryContent() {
                           </h5>
                           <div className="flex flex-wrap gap-2">
                             {reviewSession.report.topicsNotCovered.map((t: string, i: number) => (
-                              <span key={i} className="px-2.5 py-1 rounded bg-neutral-900 border border-neutral-850 text-[10px] text-muted-foreground font-medium">
+                              <span key={i} className="px-2.5 py-1 rounded bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-[10px] text-muted-foreground font-medium">
                                 {t}
                               </span>
                             ))}
@@ -580,7 +580,7 @@ function HistoryContent() {
                                 <div
                                   className={`max-w-[90%] px-4 py-3 rounded-xl border leading-relaxed text-xs relative ${
                                     isAI
-                                      ? "bg-neutral-950 border-neutral-900 text-foreground"
+                                      ? "bg-neutral-50 dark:bg-neutral-950 border-neutral-200 dark:border-neutral-900 text-foreground"
                                       : "bg-indigo-600 border-indigo-700 text-white"
                                   }`}
                                 >
@@ -624,10 +624,10 @@ function HistoryContent() {
               </div>
 
               {/* Drawer Footer */}
-              <div className="border-t border-neutral-900 p-4 bg-card flex justify-end">
+              <div className="border-t border-neutral-200 dark:border-neutral-900 p-4 bg-card flex justify-end">
                 <button
                   onClick={closeReview}
-                  className="px-5 py-2 rounded-xl bg-neutral-950 border border-neutral-800 hover:bg-neutral-900 text-xs font-semibold text-foreground cursor-pointer transition"
+                  className="px-5 py-2 rounded-xl bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-900 text-xs font-semibold text-foreground cursor-pointer transition"
                 >
                   Close Review
                 </button>
@@ -667,7 +667,7 @@ function HistoryContent() {
                 <button
                   onClick={() => setDeleteSessionId(null)}
                   disabled={isDeleting}
-                  className="px-4 py-2 rounded-xl bg-neutral-900 border border-neutral-850 hover:bg-neutral-800 text-xs font-semibold text-muted-foreground hover:text-white transition cursor-pointer disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-xs font-semibold text-muted-foreground hover:text-white transition cursor-pointer disabled:opacity-50"
                 >
                   Cancel
                 </button>

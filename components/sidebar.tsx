@@ -55,8 +55,14 @@ const Sidebar = () => {
                     <Image
                         fill 
                         alt="Logo"
-                        src="/logo.png"
-                        className="rounded-lg shadow-sm"
+                        src="/logo-icon-dark.png"
+                        className="hidden dark:block object-contain"
+                        />
+                    <Image
+                        fill 
+                        alt="Logo"
+                        src="/logo-icon-light.png"
+                        className="block dark:hidden object-contain"
                         />
                 </div>
                 <h1 className={cn("text-2xl font-bold text-neutral-900 dark:text-white", montserrat.className)}>

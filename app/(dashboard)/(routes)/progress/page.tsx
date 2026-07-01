@@ -71,8 +71,8 @@ export default function ProgressPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-10 pb-24">
       {/* Header */}
-      <div className="border-b border-neutral-850 pb-6 space-y-1">
-        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
+      <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6 space-y-1">
+        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
           Performance Analytics
         </h2>
         <p className="text-muted-foreground text-sm font-light">
@@ -81,10 +81,10 @@ export default function ProgressPage() {
       </div>
 
       {!hasData ? (
-        <Card className="border-dashed border-neutral-800 p-16 text-center flex flex-col items-center justify-center min-h-[400px]">
-          <Activity className="w-12 h-12 text-neutral-600 mb-3 animate-pulse" />
+        <Card className="border-dashed border-neutral-200 dark:border-neutral-800 p-16 text-center flex flex-col items-center justify-center min-h-[400px] bg-card">
+          <Activity className="w-12 h-12 text-neutral-500 dark:text-neutral-600 mb-3 animate-pulse" />
           <h3 className="text-lg font-bold text-foreground">No Performance Analytics Yet</h3>
-          <p className="text-sm text-neutral-400 mt-2 max-w-md leading-relaxed font-light">
+          <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-2 max-w-md leading-relaxed font-light">
             Once you complete a mock interview track and receive grading scores, aggregated charts, strengths, and study advice will generate here.
           </p>
           <button
@@ -123,7 +123,7 @@ export default function ProgressPage() {
                 }
 
                 return (
-                  <Card key={category.id} className="bg-card border-neutral-900 overflow-hidden relative group hover:border-neutral-800 transition duration-300">
+                  <Card key={category.id} className="bg-card border-neutral-200 dark:border-neutral-900 overflow-hidden relative group hover:border-neutral-300 dark:hover:border-neutral-800 transition duration-300">
                     <CardContent className="p-5 flex flex-col items-center justify-between h-full text-center gap-y-4">
                       
                       {/* SVG Score Ring */}
@@ -134,7 +134,7 @@ export default function ProgressPage() {
                             cx="40"
                             cy="40"
                             r={radius}
-                            className="stroke-neutral-800 fill-none"
+                            className="stroke-neutral-200 dark:stroke-neutral-800 fill-none"
                             strokeWidth="5"
                           />
                           {/* Colored offset progress track */}
@@ -181,7 +181,7 @@ export default function ProgressPage() {
               <h3 className="text-lg font-bold text-foreground/80 pl-1 flex items-center gap-x-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-500" /> Key Strengths Aligned
               </h3>
-              <Card className="bg-card border-neutral-900 p-6 min-h-[220px]">
+              <Card className="bg-card border-neutral-200 dark:border-neutral-900 p-6 min-h-[220px]">
                 {allStrengths.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-12">No insights aggregated yet.</p>
                 ) : (
@@ -204,7 +204,7 @@ export default function ProgressPage() {
               <h3 className="text-lg font-bold text-foreground/80 pl-1 flex items-center gap-x-2">
                 <AlertTriangle className="w-5 h-5 text-rose-500" /> Improvement Gaps Logged
               </h3>
-              <Card className="bg-card border-neutral-900 p-6 min-h-[220px]">
+              <Card className="bg-card border-neutral-200 dark:border-neutral-900 p-6 min-h-[220px]">
                 {allWeakAreas.length === 0 ? (
                   <p className="text-xs text-muted-foreground text-center py-12">No insights aggregated yet.</p>
                 ) : (
@@ -225,7 +225,7 @@ export default function ProgressPage() {
           </div>
 
           {/* V2 Call to Action Block */}
-          <Card className="bg-gradient-to-br from-indigo-950/20 via-neutral-900 to-indigo-950/20 border-indigo-500/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <Card className="bg-gradient-to-br from-indigo-50/20 via-neutral-50 to-indigo-50/20 dark:from-indigo-950/20 dark:via-neutral-900 dark:to-indigo-950/20 border-indigo-200 dark:border-indigo-500/10 p-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2 text-center md:text-left">
               <h4 className="text-md font-bold text-foreground flex items-center justify-center md:justify-start gap-x-2">
                 <Sparkles className="w-5 h-5 text-indigo-500" /> Unlock AI Study Plans (V2 Preview)

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { 
   Award, 
   Calendar, 
@@ -167,14 +168,24 @@ export default function DashboardPage() {
   return (
     <div className="max-w-6xl mx-auto px-6 py-8 space-y-10 pb-24">
       {/* Header Greeting */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-y-4 border-b border-neutral-800 pb-6">
-        <div className="space-y-1">
-          <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white to-neutral-400 bg-clip-text text-transparent">
-            Conquer Prep Workspace
-          </h2>
-          <p className="text-muted-foreground text-sm font-light">
-            Practice adaptive technical interviews and track your progress metrics.
-          </p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-y-4 border-b border-neutral-200 dark:border-neutral-800 pb-6">
+        <div className="flex items-center gap-x-4">
+          <div className="relative w-12 h-12 shrink-0 select-none pointer-events-none drop-shadow-[0_0_15px_rgba(99,102,241,0.15)]">
+            <Image
+              src="/logo-ai.png"
+              alt="AI Vibe Logo"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
+              Conquer Prep Workspace
+            </h2>
+            <p className="text-muted-foreground text-sm font-light">
+              Practice adaptive technical interviews and track your progress metrics.
+            </p>
+          </div>
         </div>
         {hasActiveSession && (
           <div className="inline-flex items-center gap-x-2 px-4 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold animate-pulse">
@@ -185,7 +196,7 @@ export default function DashboardPage() {
 
       {/* Stats Cards Dashboard Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <Card className="bg-gradient-to-br from-neutral-900/40 via-neutral-900/10 to-neutral-950/40 border-neutral-850 dark:border-neutral-800">
+        <Card className="bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900/40 dark:via-neutral-900/10 dark:to-neutral-950/40 border-neutral-200 dark:border-neutral-800 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Total Mock Interviews
@@ -198,7 +209,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-neutral-900/40 via-neutral-900/10 to-neutral-950/40 border-neutral-850 dark:border-neutral-800">
+        <Card className="bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900/40 dark:via-neutral-900/10 dark:to-neutral-950/40 border-neutral-200 dark:border-neutral-800 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Overall Score Average
@@ -214,7 +225,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-neutral-900/40 via-neutral-900/10 to-neutral-950/40 border-neutral-850 dark:border-neutral-800">
+        <Card className="bg-gradient-to-br from-neutral-50 via-white to-neutral-100 dark:from-neutral-900/40 dark:via-neutral-900/10 dark:to-neutral-950/40 border-neutral-200 dark:border-neutral-800 shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
             <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
               Tracks Practiced
@@ -263,7 +274,7 @@ export default function DashboardPage() {
                   return (
                     <Card 
                       key={session.id} 
-                      className="bg-card border-neutral-850 dark:border-neutral-800 hover:border-neutral-700/80 transition-all duration-300 overflow-hidden"
+                      className="bg-card border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700/80 transition-all duration-300 overflow-hidden"
                     >
                       <div className="p-4 flex flex-col justify-between h-full gap-y-3">
                         <div className="flex justify-between items-start gap-x-2">
@@ -272,7 +283,7 @@ export default function DashboardPage() {
                               {session.topic}
                             </h4>
                             <div className="flex items-center gap-x-1.5">
-                              <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-muted-foreground font-medium border border-neutral-200 dark:border-neutral-850">
+                              <span className="text-[10px] px-2 py-0.5 rounded bg-neutral-100 dark:bg-neutral-800 text-muted-foreground font-medium border border-neutral-200 dark:border-neutral-800">
                                 {session.difficulty}
                               </span>
                               <span className="text-[10px] text-muted-foreground">
@@ -295,7 +306,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Action buttons */}
-                        <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-850 pt-3">
+                        <div className="flex items-center justify-between border-t border-neutral-200 dark:border-neutral-800 pt-3">
                           <span className="text-[10px] text-muted-foreground font-light">
                             {isCompleted ? `${session.totalTurns} Turns` : "Unfinished"}
                           </span>
@@ -328,7 +339,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-foreground/80 pl-1">
               Ailment Snapshot
             </h3>
-            <Card className="p-5 border-neutral-850 dark:border-neutral-800 bg-card space-y-4">
+            <Card className="p-5 border-neutral-200 dark:border-neutral-800 bg-card space-y-4">
               <div className="flex items-center gap-x-2">
                 <Target className="w-4 h-4 text-rose-500 animate-pulse" />
                 <span className="text-xs font-bold text-foreground uppercase tracking-wider">Top Gaps to Practice</span>
@@ -343,7 +354,7 @@ export default function DashboardPage() {
                 <div className="space-y-3.5">
                   <ul className="space-y-2">
                     {allWeakAreas.map((gap, i) => (
-                      <li key={i} className="text-xs text-foreground/80 flex items-start gap-x-2.5 leading-relaxed bg-neutral-100 dark:bg-neutral-900/60 p-2 rounded-lg border border-neutral-200/50 dark:border-neutral-850">
+                      <li key={i} className="text-xs text-foreground/80 flex items-start gap-x-2.5 leading-relaxed bg-neutral-100 dark:bg-neutral-900/60 p-2 rounded-lg border border-neutral-200/50 dark:border-neutral-800">
                         <AlertTriangle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
                         <div>
                           <span className="font-semibold text-neutral-600 dark:text-neutral-400 block text-[10px] uppercase">
@@ -374,7 +385,7 @@ export default function DashboardPage() {
             <h3 className="text-lg font-bold text-foreground/80 pl-1">
               Weekly Performance Target
             </h3>
-            <Card className="p-5 border-neutral-850 dark:border-neutral-800 bg-card flex items-center justify-between gap-x-4">
+            <Card className="p-5 border-neutral-200 dark:border-neutral-800 bg-card flex items-center justify-between gap-x-4">
               <div className="space-y-1">
                 <span className="text-xs font-bold text-foreground uppercase tracking-wider block">Mock Goal Progress</span>
                 <p className="text-2xl font-black text-foreground">
@@ -392,14 +403,14 @@ export default function DashboardPage() {
                     cx="32"
                     cy="32"
                     r="26"
-                    className="stroke-neutral-200 dark:stroke-neutral-850 fill-none"
+                    className="stroke-neutral-200 dark:stroke-neutral-800 fill-none"
                     strokeWidth="5"
                   />
                   <circle
                     cx="32"
                     cy="32"
                     r="26"
-                    className="stroke-indigo-650 dark:stroke-indigo-500 fill-none transition-all duration-550"
+                    className="stroke-indigo-600 dark:stroke-indigo-500 fill-none transition-all duration-550"
                     strokeWidth="5"
                     strokeDasharray={2 * Math.PI * 26}
                     strokeDashoffset={2 * Math.PI * 26 * (1 - weeklyProgressPercentage / 100)}
