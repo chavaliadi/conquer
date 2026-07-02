@@ -179,7 +179,7 @@ export default function DashboardPage() {
             />
           </div>
           <div className="space-y-1">
-            <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
+            <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
               Conquer Prep Workspace
             </h2>
             <p className="text-muted-foreground text-sm font-light">

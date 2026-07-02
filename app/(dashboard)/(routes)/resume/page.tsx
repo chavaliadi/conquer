@@ -195,7 +195,7 @@ export default function ResumePage() {
     <div className="max-w-3xl mx-auto px-6 py-8 space-y-10 pb-24">
       {/* Header */}
       <div className="border-b border-neutral-200 dark:border-neutral-800 pb-6 space-y-1">
-        <h2 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-neutral-900 to-neutral-600 dark:from-white dark:to-neutral-400 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-extrabold tracking-tight text-neutral-900 dark:text-white">
           Resume Manager
         </h2>
         <p className="text-muted-foreground text-sm font-light">
